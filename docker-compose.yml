@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: zakat_mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: zakat_db
+      MYSQL_USER: zakat
+      MYSQL_PASSWORD: secret
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+   
+
+networks:
+  default:
+    name: zakat_network
+
+volumes:
+  mysql_data:
