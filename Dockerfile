@@ -1,47 +1,39 @@
-# Use official PHP with Apache
 FROM php:8.2-apache
 
-# Install system packages + PHP extensions Laravel needs
+# Install system deps
 RUN apt-get update && apt-get install -y \
     git \
-    curl \
-    zip \
     unzip \
-    libzip-dev \
-    && docker-php-ext-install zip pdo pdo_mysql
+    sqlite3 \
+    libsqlite3-dev
 
-# Enable Apache rewrite (required for Laravel routing)
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Install Composer
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_sqlite
+
+# Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Set workdir
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy project
 COPY . .
 
-# Install PHP dependencies
+# Install Laravel deps
 RUN composer install --no-dev --optimize-autoloader
 
-# Laravel permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+# ✅ FIX 1: create sqlite file
+RUN touch database/database.sqlite
 
-# Generate app key safely (won’t fail if exists)
-RUN php artisan key:generate || true
+# ✅ FIX 2: fix permissions
+RUN chown -R www-data:www-data storage bootstrap/cache database
+RUN chmod -R 775 storage bootstrap/cache database
 
-# Cache config
-# RUN php artisan config:cache || true
+# Apache config
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-# Apache public folder fix (IMPORTANT)
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Expose port
 EXPOSE 80
-
-# Start Apache
 CMD ["apache2-foreground"]
