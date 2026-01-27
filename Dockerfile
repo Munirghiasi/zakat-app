@@ -32,7 +32,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 RUN php artisan key:generate || true
 
 # Cache config
-RUN php artisan config:cache || true
+# RUN php artisan config:cache || true
 
 # Apache public folder fix (IMPORTANT)
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
