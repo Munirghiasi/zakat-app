@@ -9,10 +9,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-RUN composer install --no-dev \
-    && php artisan key:generate \
-    && php artisan migrate --force
-
+RUN composer install --no-dev 
 
 RUN touch database/database.sqlite
 
