@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: laravel-zakat-app
+    env: php
+    buildCommand: |
+      composer install --no-interaction --optimize-autoloader --no-dev
+      php artisan key:generate
+      php artisan storage:link
+      php artisan migrate --force
+    startCommand: php artisan serve --host=0.0.0.0 --port=8000
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: laravel-zakat-app
+          property: url
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
