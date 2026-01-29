@@ -9,7 +9,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev \
+    && php artisan key:generate \
+    && php artisan migrate --force
+
 
 RUN touch database/database.sqlite
 
@@ -23,3 +26,6 @@ CMD ["apache2-foreground"]
 
 RUN touch database/database.sqlite
 RUN chmod -R 777 storage bootstrap/cache database
+
+
+RUN php artisan migrate
